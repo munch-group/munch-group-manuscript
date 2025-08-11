@@ -44,6 +44,7 @@ exclude = ["test*"]
 [tool.setuptools.package-data]
 munch_group_template = ["data/*.txt", "data/*.csv", "data/*.pickle", "data/*.h5"]
 
+
 [tool.pixi.project]
 name = "munch-group-template"
 version = "0.1.1.rc1"
@@ -52,22 +53,12 @@ authors = ["Your Name <your@email.com>"]
 channels = ["conda-forge"]
 platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
 
+[tool.pixi.workspace]
+channels = ["conda-forge", "munch-group"]
+platforms = ["osx-arm64", "win-64", "osx-64", "linux-64"]
+
 [tool.pixi.dependencies]
-python = ">=3.8"
-git = "*"
-git-lfs = "*"
-gh = "*"
-conda-build = "*"
-cryptography = "*"
-jupyterlab = ">=4"
-nbdime = "*"
-nodejs = "*"
-seaborn = "*"
-pytables = "*"
-scipy = "*"
-scikit-learn = "*"
-statsmodels = "*"
-pip = "*"
+python = ">=3.9"
 
 # [tool.pixi.pypi-dependencies]
 # Optional PyPI dependencies can be added here
@@ -79,8 +70,24 @@ dev = {features = ["dev"], solve-group = "default"}
 
 [tool.pixi.feature.dev.dependencies]
 pytest = "*"
-black = "*"
-ruff = "*"
+setuptools = ">=65.0"
+wheel = "*"
+anthropic = "*"
+gitpython = "*"
+rpds-py = "*"
+jsonschema = "*"
+git = "*"
+git-lfs = "*"
+gh = "*"
+conda-build = "*"
+cryptography = "*"
+jupyterlab = ">=4"
+nbdime = "*"
+nodejs = "*"
+seaborn = "*"
+pytables = "*"
+pip = "*"
+
 
 [tool.pixi.tasks.init-project]
 cmd = "./scripts/template_init.py && ./.scripts/init-project.sh -y"
@@ -118,20 +125,31 @@ description = "Removes untracked files and directories but respects your .gitign
 cmd = "python -m unittest"
 description = "Run tests"
 
+ 
 
+# setup-kernel = "python -m ipykernel install --user --name franklin --display-name 'Franklin Python'"
+# quarto-render = { cmd = "quarto render", env = { QUARTO_PYTHON = ".pixi/envs/default/bin/python" } }
 
 [tool.pixi.tasks.bump-version]
 args = [
-  { "arg" = "kind", "default" = "patch" },  # can be --patch, --minor, --major
+  { "arg" = "kind", "default" = "patch" },  # can be patch, minor, major
   { "arg" = "flag", "default" = "" },     # can be --pre, --release
 ]
-cmd = "./.scripts/bump_version.py --{{ kind }} {{ flag }} &&  git add -u &&  git commit -m '{{ kind }} {{ flag }} version bump'"
+cmd = "./.scripts/bump_version.py --{{ kind }} {{ flag }} &&  git add -u &&  git commit -m '{{ kind }} {{ flag }} version bump' && git push" 
 description = "Bump version patch and build/release conda packages"
 
 [tool.pixi.tasks.bump-changelog]
 cmd = "./.scripts/bump_changelog.py --yes"
 description = "Bump version patch and build/release conda packages"
 
+[tool.pixi.tasks.acp]
+args = [
+  { "arg" = "message", "default" = "update" },  # can be --patch, --minor, --major
+]
+cmd = "git add -u ; git commit -m '{{ message }}' ; git push"
+description = "git add commit push of tracked files with optional message"
+
 [tool.pixi.tasks.github-release]
-cmd = "./.scripts/release_tag.sh"
+cmd = "./.scripts/release-tag.sh"
 description = "Release latest version on Github"
+
