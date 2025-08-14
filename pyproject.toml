@@ -44,15 +44,6 @@ exclude = ["test*"]
 [tool.setuptools.package-data]
 munch_group_template = ["data/*.txt", "data/*.csv", "data/*.pickle", "data/*.h5"]
 
-
-[tool.pixi.project]
-name = "munch-group-template"
-version = "0.1.1.rc1"
-description = "Project description"
-authors = ["Your Name <your@email.com>"]
-channels = ["conda-forge"]
-platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
-
 [tool.pixi.workspace]
 channels = ["conda-forge", "munch-group"]
 platforms = ["osx-arm64", "win-64", "osx-64", "linux-64"]
