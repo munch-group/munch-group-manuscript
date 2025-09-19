@@ -42,8 +42,9 @@ jobs:
         #   # version: SPECIFIC-QUARTO-VERSION-HERE
 
       - name: Install TinyTeX
-        run: |
-          quarto install tinytex --no-prompt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: quarto install tinytex --no-prompt
 
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v2
