@@ -41,10 +41,6 @@ book:
       chapters:
       # (the same files must be listed _quarto-slides.yml to render as slides)
       - manuscript/index.qmd 
-    - part: "Thesis"
-      chapters:
-      # (the same files must be listed _quarto-slides.yml to render as slides)
-      - thesis/index.qmd 
     - part: "Slides"
       chapters:
       # (the same files must be listed _quarto-slides.yml to render as slides)
