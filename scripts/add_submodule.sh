@@ -19,5 +19,5 @@ git submodule init ${REPO} # initialize it
 git submodule update ${REPO} # and pull the current state of the submodule repo
 # track .gitmodules
 git add .gitmodules ${REPO} && git commit -m "Added ${REPO} as submodule" && git push # track .gitmodules
-# checkout main(or some other branch)
-cd ${REPO} && git checkout main && cd ..  # checkout main(or some other branch)
+# checkout main 
+cd ${REPO} && git checkout main && cd ..  
