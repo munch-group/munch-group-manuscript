@@ -1,0 +1,452 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "projectname",
+    "section": "",
+    "text": "Preface\nThese pages are generated from a Git repository…",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#section",
+    "href": "index.html#section",
+    "title": "projectname",
+    "section": "Section",
+    "text": "Section\nUt ut condimentum augue, nec eleifend nisl. Sed facilisis egestas odio ac pretium. Pellentesque consequat magna sed venenatis sagittis. Vivamus feugiat lobortis magna vitae accumsan. Pellentesque euismod malesuada hendrerit. Ut non mauris non arcu condimentum sodales vitae vitae dolor. Nullam dapibus, velit eget lacinia rutrum, ipsum justo malesuada odio, et lobortis sapien magna vel lacus. Nulla purus neque, hendrerit non malesuada eget, mattis vel erat. Suspendisse potenti.",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#section-1",
+    "href": "index.html#section-1",
+    "title": "projectname",
+    "section": "Section",
+    "text": "Section\nDuis urna urna, pellentesque eu urna ut, malesuada bibendum dolor. Suspendisse potenti. Vivamus ornare, arcu quis molestie ultrices, magna est accumsan augue, auctor vulputate erat quam quis neque. Nullam scelerisque odio vel ultricies facilisis. Ut porta arcu non magna sagittis lacinia. Cras ornare vulputate lectus a tristique. Pellentesque ac arcu congue, rhoncus mi id, dignissim ligula.",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "projectname",
+    "section": "Install",
+    "text": "Install\nconda install -c conda-forge git git-lfs\ngit lfs install",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#configure",
+    "href": "index.html#configure",
+    "title": "projectname",
+    "section": "Configure",
+    "text": "Configure\ngit lfs track \"*.h5\"\ngit add .gitattributes ; git commit -m 'Added LFS' ; git push\nFrom now, on all h5 files add added to the repo will go on lfs.\nhttps://docs.github.com/en/repositories/working-with-files/managing-large-files/configuring-git-large-file-storage",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#managing-files",
+    "href": "index.html#managing-files",
+    "title": "projectname",
+    "section": "Managing files",
+    "text": "Managing files\n\n\n\n\n\n\nWarning\n\n\n\nManaging files is for the PI only.\n\n\nhttps://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-git-lfs-objects-in-archives-of-your-repository # Submodules\nSubmodules are useful if you have analysis components that are used across many projects or if results from several past/ongoing projects need to be integrated in a project as a third-party library.\nThe repos can each have their own adjustable workflow as decribed here, that are then easily put together in a larger workflow as described here.\n\n\n\n\n\n\nImportant\n\n\n\nMake sure you install the current version of Git in your environments. The one on the cluster is ancient.\nconda install -c conda-forge git\nI also set these configs for each environment to get nicer/safer commands (commands below assume these are set):\ngit config --global diff.submodule log\ngit config status.submodulesummary 1\ngit config push.recurseSubmodules check",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#tldr",
+    "href": "index.html#tldr",
+    "title": "projectname",
+    "section": "TLDR;",
+    "text": "TLDR;\n# clone repository as submodule\ngit submodule add git@github.com:munch-group/${REPO}.git\n\n# initialize it\ngit submodule init ${REPO} # initialize it\n\n# and pull the current state of the submodule repo\ngit submodule update ${REPO}\n\n# track new .gitmodules\ngit add .gitmodules ${REPO} && git commit -m \"Added ${REPO} as submodule\" && git push \n\n# checkout main or some other branch)\ncd ${REPO} && git checkout main && cd .. \n\n# config sensible defaults for diff, status, and push\ngit config --global diff.submodule log\ngit config status.submodulesummary 1\ngit config push.recurseSubmodules check",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#add-a-submodule",
+    "href": "index.html#add-a-submodule",
+    "title": "projectname",
+    "section": "Add a submodule",
+    "text": "Add a submodule\nNow, say you have a project repo called “umbrella” that will contain other projects and that you have cloned that:\ngit clone git@github.com:kaspermunch/umbrella.git\nYou want to use an rfmix pipeline in your project. So you clone this repository as submodule:\n\n\nTerminal\n\ngit submodule add git@github.com:munch-group/rfmix.git\n\nand pull the current state of the submodule repo:\n\n\nTerminal\n\ngit submodule init rfmix\ngit submodule update rfmix\n\nThis also generates a .gitmodules configuration file that git uses to keep track of submodules. Commit that the addalong with the submodule:\n\n\nTerminal\n\ngit add .gitmodules rfmix\ngit commit -m 'Added rfmix as submodule'\ngit push\n\nIf you want to work on/change submodule repo you need to check out a branch to work on (main or some other). Always do this. If you decide to make changes later and forgot you did not check out a branch you could loose those changes:\n\n\nTerminal\n\ncd rfmix\ngit checkout main  # (or some other branch)",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#making-changes-to-the-submodule",
+    "href": "index.html#making-changes-to-the-submodule",
+    "title": "projectname",
+    "section": "Making changes to the submodule",
+    "text": "Making changes to the submodule\nnow you can then do some work on the tester repo (E.g. change the README.md) and add, commit as usual:\n\n\nTerminal\n\ncd rfmix\n# change README.md\ngit add README.md\ngit commit",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#publishing-submodule-changes-to-github",
+    "href": "index.html#publishing-submodule-changes-to-github",
+    "title": "projectname",
+    "section": "Publishing submodule changes to GitHub",
+    "text": "Publishing submodule changes to GitHub\nTo publish your submodule commit to the tester repo on GitHub you run:\n\n\nTerminal\n\ncd rfmix\ngit push",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#getting-submodule-changes-from-github",
+    "href": "index.html#getting-submodule-changes-from-github",
+    "title": "projectname",
+    "section": "Getting submodule changes from GitHub",
+    "text": "Getting submodule changes from GitHub\nif you run “git pull” in the umbrella repo, you pull upstream changes to the umbrella repo including the recorded state (commit) of the tester submodule:\n\n\nTerminal\n\ngit pull\n\nbut it does not pull the tester submodule itself. To do that you run pull in the submodule:\n\n\nTerminal\n\ncd rfmix\ngit pull",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "index.html#multiple-submodules",
+    "href": "index.html#multiple-submodules",
+    "title": "projectname",
+    "section": "Multiple submodules",
+    "text": "Multiple submodules\nYou can have as many submodules as you want. With more submodules, each update command updates all submodules.",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html",
+    "href": "manuscript/index.html",
+    "title": "Title of manuscript",
+    "section": "",
+    "text": "Abstract\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html#subsection-with-text-from-notebook",
+    "href": "manuscript/index.html#subsection-with-text-from-notebook",
+    "title": "Title of manuscript",
+    "section": "Subsection (with text from notebook)",
+    "text": "Subsection (with text from notebook)\n\n\n\nThe 24 subjects from workplaces in Denmark were interviewed …. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah\n\n\n\nEuismod lectus ultrices; duis duis ipsum rhoncus. Ipsum vitae primis potenti suscipit per nascetur rutrum lobortis. Suspendisse et maximus elit. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. Aliquam luctus est sit amet vestibulum eleifend. Phasellus elementum sagittis molestie. Proin tempor lorem arcu, at condimentum purus volutpat eu.",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html#subsection-with-embedded-table-from-notebook",
+    "href": "manuscript/index.html#subsection-with-embedded-table-from-notebook",
+    "title": "Title of manuscript",
+    "section": "Subsection (with embedded table from notebook)",
+    "text": "Subsection (with embedded table from notebook)\nThese were selected to represent as many nationalities as possible (Table 4.1). Proin feugiat leo quis ante condimentum, eu ornare mauris feugiat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris cursus laoreet ex, ignissim bibendum est posuere iaculis. Suspendisse et maximus elit. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam.\n\n\n\n\n\nTable 4.1: People included in the analysis.\n\n\n\n\n\n\n\n\n\n\nname\nage\nsex\nposition\nnationality\n\n\n\n\n0\nJulie\n27\nF\nPhDstudent\nDK\n\n\n1\nThomas\n33\nM\nPostdoc\nGB\n\n\n2\nEmilie\n23\nF\nPhDstudent\nCH\n\n\n3\nSofie\n31\nF\nPostdoc\nDK\n\n\n4\nSara\n29\nF\nPostdoc\nUS\n\n\n5\nCecilie\n34\nF\nPostdoc\nDK\n\n\n6\nAnders\n32\nM\nPhDstudent\nUK\n\n\n7\nEmma\n42\nF\nProfessor\nDK\n\n\n8\nCaroline\n31\nF\nPhDstudent\nDK\n\n\n9\nLaura\n30\nF\nPostdoc\nDK\n\n\n10\nMikkel\n33\nM\nPostdoc\nNL\n\n\n11\nJens\n27\nM\nPhDstudent\nDK\n\n\n12\nAndreas\n29\nM\nPhDstudent\nDK\n\n\n13\nJakob\n28\nM\nPhDstudent\nDK\n\n\n14\nMathilde\n61\nF\nProfessor\nDK\n\n\n15\nKatrine\n35\nF\nPostdoc\nDK\n\n\n16\nPoul\n30\nM\nPostdoc\nDK\n\n\n17\nAnna\n26\nF\nPhDstudent\nDK\n\n\n18\nPeter\n42\nM\nProfessor\nGB\n\n\n19\nIda\n53\nF\nPostdoc\nDK\n\n\n20\nFreja\n30\nF\nPostdoc\nDK\n\n\n21\nMaria\n39\nF\nProfessor\nUK\n\n\n22\nAmalie\n29\nF\nPhDstudent\nDK\n\n\n23\nCamilla\n35\nF\nPostdoc\nDK\n\n\n\n\n\n\n\n\n\n\n\nAenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. Aliquam luctus est sit amet vestibulum eleifend. Phasellus elementum sagittis molestie. Proin tempor lorem arcu, at condimentum purus volutpat eu. Fusce et ellentesque ligula. Pellentesque id tellus at erat luctus fringilla. Suspendisse potenti.",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html#subsection-with-math",
+    "href": "manuscript/index.html#subsection-with-math",
+    "title": "Title of manuscript",
+    "section": "Subsection (with math)",
+    "text": "Subsection (with math)\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. This is calculated as \\(\\pi_k = \\prod_{i=1}^K x_i\\). Phasellus elementum sagittis molestie. Proin tempor lorem arcu, at condimentum purus volutpat eu. Fusce et ellentesque ligula. Pellentesque id tellus at erat luctus fringilla. Suspendisse potenti as shown in (Equation 5.1).\n\\[\n\\lambda = \\sum_{k=1}^N \\pi_k\n\\tag{4.1}\\]\nAs shown in Equation 5.2, ac dignissim magna. Vestibulum vitae egestas elit. Proin feugiat leo quis ante condimentum, eu ornare mauris feugiat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris cursus laoreet ex, ignissim bibendum est posuere iaculis. Suspendisse et maximus elit.\n\\[\ny \\sim \\beta_1 x + \\beta_2\n\\tag{4.2}\\]",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html#subsection-with-code",
+    "href": "manuscript/index.html#subsection-with-code",
+    "title": "Title of manuscript",
+    "section": "Subsection (with code)",
+    "text": "Subsection (with code)\n\n# this code is executed but not shown in the output\nx = 5\n\nPulvinar tempus nascetur sollicitudin fringilla sodales. The value of x is 5. Sapien ullamcorper pretium tellus ultricies sodales aliquet. Proin eros iaculis fames mus cubilia praesent cubilia. Nulla quam montes sed varius nullam non. Mi turpis sagittis ornare condimentum consectetur. In Python, we can define a variable like this:\ny = 4\n\nSubsection (bold and italics)\nThis is bold, so is this. This is italics, so is this. This is both, so is this. Pulvinar tempus nascetur sollicitudin fringilla sodales. Urna lorem nisi volutpat; lobortis dapibus auctor mollis. Suscipit conubia neque cras curae vitae curabitur facilisi inceptos ante. Vehicula volutpat nulla nostra inceptos parturient dui purus ipsum ante.\n\n\nSubsubsection\nPulvinar tempus nascetur sollicitudin fringilla sodales. Urna lorem nisi volutpat; lobortis dapibus auctor mollis. Suscipit conubia neque cras curae vitae curabitur facilisi inceptos ante. Phasellus augue inceptos nulla; amet id egestas ad. Enim ad eget nullam fames blandit neque varius mi. Velit pretium est conubia montes gravida. Vehicula volutpat nulla nostra inceptos parturient dui purus ipsum ante.",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html#section-with-embedded-figures-from-notebooks",
+    "href": "manuscript/index.html#section-with-embedded-figures-from-notebooks",
+    "title": "Title of manuscript",
+    "section": "Section (with embedded figures from notebooks)",
+    "text": "Section (with embedded figures from notebooks)\nPretium id vestibulum tristique ornare cras. Litora odio mus nullam molestie himenaeos neque lacus bibendum penatibus. Velit porttitor eget massa hac massa feugiat netus ac. Sodales scelerisque imperdiet curae luctus iaculis est vehicula elementum. (Figure 4.2).\n\n\n\n\n\n\n\n\n\nFigure 5.1: Interaction among Danes: Regressions of informality against age for five levels of seniority.\n\n\n\n\n\n\nAs shown in Figure 4.1, feugiat leo quis ante condimentum, eu ornare mauris feugiat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris cursus laoreet ex, ignissim bibendum est posuere iaculis. Suspendisse et maximus elit. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. Aliquam luctus est sit amet vestibulum eleifend.\n\n\n\n\n\n\n\n\n\nFigure 5.2: Interaction among Danes: How Danes interact is has very little to do with age and seniority, compared to most other contries.",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "manuscript/index.html#section-with-table-embedded-from-notebook",
+    "href": "manuscript/index.html#section-with-table-embedded-from-notebook",
+    "title": "Title of manuscript",
+    "section": "Section (with table embedded from notebook)",
+    "text": "Section (with table embedded from notebook)\nCubilia hendrerit ipsum suspendisse curae curae suspendisse scelerisque semper luctus. Erat turpis dictum bibendum taciti pharetra. Nisi sed vestibulum felis duis; dapibus id. Justo semper felis potenti commodo class. Mauris venenatis purus integer urna cras faucibus. Eu consequat varius massa porttitor nisi. Est fringilla sed senectus ante fames ipsum aenean porta neque, Table 4.2 lists the mean interaction scores by seniority and nationality.\n\n\n\n\n\nTable 5.1: Mean interaction scores by seniority and age\n\n\n\n\n\n\n\n\n\n\nseniority\nage\ninformality\n\n\n\n\n0\n0\n32.200000\n10.359226\n\n\n1\n1\n31.250000\n10.483543\n\n\n2\n2\n29.666667\n9.071180\n\n\n3\n3\n38.833333\n9.351696\n\n\n4\n4\n33.500000\n9.758261\n\n\n\n\n\n\n\n\n\n\n\nLigula molestie convallis magnis elit tellus volutpat. Hac id in libero nibh inceptos. Malesuada blandit porttitor ad; netus integer tortor. Quis venenatis lorem sit ex hendrerit porta in. Purus praesent felis eget class luctus condimentum finibus quis tincidunt. Nam lectus malesuada primis dapibus consectetur. Quam placerat nam ullamcorper fusce conubia fermentum himenaeos gravida nostra.\n\nDiscussion\nSociosqu iaculis molestie consectetur; pulvinar imperdiet pellentesque sollicitudin erat. Varius mattis neque blandit sodales mauris vestibulum. Iaculis sodales euismod neque risus nostra magna fermentum eleifend. Tempus consequat montes nec quisque urna quam non montes. Accumsan ligula mauris nullam nascetur maximus sodales. Non tellus vel aliquam aenean nulla turpis curabitur potenti. Eleifend luctus mi primis elementum, rhoncus quisque. Aenean semper blandit cursus sapien; eget sem. Posuere ultricies torquent tellus ridiculus enim placerat malesuada tempus.\nSapien ullamcorper pretium tellus ultricies sodales aliquet. Proin eros iaculis fames mus cubilia praesent cubilia. Nulla quam montes sed varius nullam non. Mi turpis sagittis ornare condimentum consectetur. Aenean orci sagittis nibh venenatis natoque bibendum semper vel. Interdum per velit lacus ridiculus augue convallis mollis. Faucibus eget eros aptent; fusce magnis lacinia duis. Justo ad fames laoreet nisl viverra.\n\n\nConclusion\nLaoreet ullamcorper urna et amet nunc faucibus finibus. Eget consequat sed integer bibendum a mollis nisl luctus. Orci leo quisque inceptos imperdiet proin. Pellentesque commodo parturient maecenas eu leo malesuada ullamcorper nulla viverra. Arcu ligula imperdiet quisque finibus in curae et accumsan. Egestas gravida sollicitudin venenatis pellentesque litora leo.\nCras velit donec in a morbi ligula, ultrices at tempor. Auctor lectus in aptent suscipit congue. Urna dui metus risus eleifend odio nisl magna. Nascetur fringilla metus proin vitae in diam. Class tincidunt lorem et dictum quisque arcu euismod. Adipiscing dui interdum aptent fusce pretium pretium. Efficitur imperdiet sem dictumst ultrices id rhoncus. Congue lacus efficitur scelerisque nibh vestibulum.",
+    "crumbs": [
+      "Manuscript",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Title of manuscript</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html",
+    "href": "thesis/index.html",
+    "title": "Title of my thesis",
+    "section": "",
+    "text": "Abstract\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#subsection-with-text-from-notebook",
+    "href": "thesis/index.html#subsection-with-text-from-notebook",
+    "title": "Title of my thesis",
+    "section": "Subsection (with text from notebook)",
+    "text": "Subsection (with text from notebook)\n\n\n\nThe 24 subjects from workplaces in Denmark were interviewed …. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah\n\n\n\nEuismod lectus ultrices; duis duis ipsum rhoncus. Ipsum vitae primis potenti suscipit per nascetur rutrum lobortis. Suspendisse et maximus elit. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. Aliquam luctus est sit amet vestibulum eleifend. Phasellus elementum sagittis molestie. Proin tempor lorem arcu, at condimentum purus volutpat eu.",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#subsection-with-inline-table",
+    "href": "thesis/index.html#subsection-with-inline-table",
+    "title": "Title of my thesis",
+    "section": "Subsection (with inline table)",
+    "text": "Subsection (with inline table)\nThe table below does not have analysis data but is used to tabulate something that could also be said with prose (Table 5.1). Proin feugiat leo quis ante condimentum, eu ornare mauris feugiatque eu arcu blandit fringilla et in quam.\n\n\n\nTable 5.1: Four categories of RNA with some summary info.\n\n\n\n\n\n\n\n\n\nType\nDescription\n\n\n\n\ntRNA\nA type of RNA that blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah\n\n\nmRNA\nA type of RNA that blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah\n\n\npiRNA\nA type of RNA that blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah\n\n\nsnoRNA\nA type of RNA that blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#subsection-with-math",
+    "href": "thesis/index.html#subsection-with-math",
+    "title": "Title of my thesis",
+    "section": "Subsection (with math)",
+    "text": "Subsection (with math)\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. This is calculated as \\(\\pi_k = \\prod_{i=1}^K x_i\\). Phasellus elementum sagittis molestie. Proin tempor lorem arcu, at condimentum purus volutpat eu. Fusce et ellentesque ligula. Pellentesque id tellus at erat luctus fringilla. Suspendisse potenti as shown in (Equation 5.1).\n\\[\n\\lambda = \\sum_{k=1}^N \\pi_k\n\\tag{5.1}\\]\nAs shown in Equation 5.2, ac dignissim magna. Vestibulum vitae egestas elit. Proin feugiat leo quis ante condimentum, eu ornare mauris feugiat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris cursus laoreet ex, ignissim bibendum est posuere iaculis. Suspendisse et maximus elit.\n\\[\ny \\sim \\beta_1 x + \\beta_2\n\\tag{5.2}\\]",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#subsection-with-code",
+    "href": "thesis/index.html#subsection-with-code",
+    "title": "Title of my thesis",
+    "section": "Subsection (with code)",
+    "text": "Subsection (with code)\n\n# this code is executed but not shown in the output\nx = 5\n\nPulvinar tempus nascetur sollicitudin fringilla sodales. The value of x is 5. Sapien ullamcorper pretium tellus ultricies sodales aliquet. Proin eros iaculis fames mus cubilia praesent cubilia. Nulla quam montes sed varius nullam non. Mi turpis sagittis ornare condimentum consectetur. In Python, we can define a variable like this:\ny = 4",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#subsection-bold-and-italics",
+    "href": "thesis/index.html#subsection-bold-and-italics",
+    "title": "Title of my thesis",
+    "section": "Subsection (bold and italics)",
+    "text": "Subsection (bold and italics)\nThis is bold, so is this. This is italics, so is this. This is both, so is this. Pulvinar tempus nascetur sollicitudin fringilla sodales. Urna lorem nisi volutpat; lobortis dapibus auctor mollis. Suscipit conubia neque cras curae vitae curabitur facilisi inceptos ante. Vehicula volutpat nulla nostra inceptos parturient dui purus ipsum ante.\n\nSubsubsection\nPulvinar tempus nascetur sollicitudin fringilla sodales. Urna lorem nisi volutpat; lobortis dapibus auctor mollis. Suscipit conubia neque cras curae vitae curabitur facilisi inceptos ante. Phasellus augue inceptos nulla; amet id egestas ad. Enim ad eget nullam fames blandit neque varius mi. Velit pretium est conubia montes gravida. Vehicula volutpat nulla nostra inceptos parturient dui purus ipsum ante.\n\nSubsubsubsection\nPulvinar tempus nascetur sollicitudin fringilla sodales. Urna lorem nisi volutpat; lobortis dapibus auctor mollis. Suscipit conubia neque cras curae vitae curabitur facilisi inceptos ante. Phasellus augue inceptos nulla; amet id egestas ad. Enim ad eget nullam fames blandit neque varius mi. Velit pretium est conubia montes gravida. Vehicula volutpat nulla nostra inceptos parturient dui purus ipsum ante.",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#section-with-embedded-figures-from-notebooks",
+    "href": "thesis/index.html#section-with-embedded-figures-from-notebooks",
+    "title": "Title of my thesis",
+    "section": "Section (with embedded figures from notebooks)",
+    "text": "Section (with embedded figures from notebooks)\nPretium id vestibulum tristique ornare cras. Litora odio mus nullam molestie himenaeos neque lacus bibendum penatibus. Velit porttitor eget massa hac massa feugiat netus ac. Sodales scelerisque imperdiet curae luctus iaculis est vehicula elementum. (Figure 4.2).\n\n\n\n\n\n\n\n\n\nFigure 6.1: Interaction among Danes: Regressions of informality against age for five levels of seniority.\n\n\n\n\n\n\nAs shown in Figure 4.1, feugiat leo quis ante condimentum, eu ornare mauris feugiat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris cursus laoreet ex, ignissim bibendum est posuere iaculis. Suspendisse et maximus elit. In fringilla gravida ornare. Aenean id lectus pulvinar, sagittis felis nec, rutrum risus. Nam vel neque eu arcu blandit fringilla et in quam. Aliquam luctus est sit amet vestibulum eleifend.\n\n\n\n\n\n\n\n\n\nFigure 6.2: Interaction among Danes: How Danes interact is has very little to do with age and seniority, compared to most other contries.",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "thesis/index.html#section-with-table-embedded-from-notebook",
+    "href": "thesis/index.html#section-with-table-embedded-from-notebook",
+    "title": "Title of my thesis",
+    "section": "Section (with table embedded from notebook)",
+    "text": "Section (with table embedded from notebook)\nCubilia hendrerit ipsum suspendisse curae curae suspendisse scelerisque semper luctus. Erat turpis dictum bibendum taciti pharetra. Nisi sed vestibulum felis duis; dapibus id. Justo semper felis potenti commodo class. Mauris venenatis purus integer urna cras faucibus. Eu consequat varius massa porttitor nisi. Est fringilla sed senectus ante fames ipsum aenean porta neque, Table 4.2 lists the mean interaction scores by seniority and nationality.\n\n\n\n\n\nTable 6.1: Mean interaction scores by seniority and age\n\n\n\n\n\n\n\n\n\n\nseniority\nage\ninformality\n\n\n\n\n0\n0\n32.200000\n10.359226\n\n\n1\n1\n31.250000\n10.483543\n\n\n2\n2\n29.666667\n9.071180\n\n\n3\n3\n38.833333\n9.351696\n\n\n4\n4\n33.500000\n9.758261\n\n\n\n\n\n\n\n\n\n\n\nLigula molestie convallis magnis elit tellus volutpat. Hac id in libero nibh inceptos. Malesuada blandit porttitor ad; netus integer tortor. Quis venenatis lorem sit ex hendrerit porta in. Purus praesent felis eget class luctus condimentum finibus quis tincidunt. Nam lectus malesuada primis dapibus consectetur. Quam placerat nam ullamcorper fusce conubia fermentum himenaeos gravida nostra.",
+    "crumbs": [
+      "Thesis",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Title of my thesis</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html",
+    "href": "slides/index.html",
+    "title": "Example",
+    "section": "",
+    "text": "Admixture displacement in each geographical region",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#admixture-displacement-in-each-geographical-region",
+    "href": "slides/index.html#admixture-displacement-in-each-geographical-region",
+    "title": "Example",
+    "section": "",
+    "text": "This is a subtitle\nHere we have some text that may run over several lines of the slide frame, depending on how long it is.\n\nfirst item\n\nA sub item\n\n\nNext, we’ll brief review some theme-specific components.\n\nNote that all of the standard Reveal.js features can be used with this theme, even if we don’t highlight them here.",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#additional-theme-classes",
+    "href": "slides/index.html#additional-theme-classes",
+    "title": "Example",
+    "section": "Additional theme classes",
+    "text": "Additional theme classes\n\nSome extra things you can do with the clean theme\nSpecial classes for emphasis\n\n.alert class for default emphasis, e.g. important note.\n.fg class for custom colour, e.g. important note.\n.bg class for custom background, e.g. important note.\n\nCross-references\n\n.button class provides a Beamer-like button, e.g. Summary",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#social-norms",
+    "href": "slides/index.html#social-norms",
+    "title": "Example",
+    "section": "Social norms",
+    "text": "Social norms\n\nSampling\nWe used a sample size of 24.\nIn Denmark, the workplace interaction is very informal and largely unaffected by seniority and age.\n\n\n\nThe 24 subjects from workplaces in Denmark were interviewed …. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#social-norms-1",
+    "href": "slides/index.html#social-norms-1",
+    "title": "Example",
+    "section": "Social norms",
+    "text": "Social norms\n\nNeither academic seniority or age affected interaction\n\n\n\n\n\n\n\n\n\nFigure 3.1: Interaction among Danes: Regressions of informality against age for five levels of seniority.\n\n\n\n\n\n\n\n\n\n\nThe correlation between informality and age was -0.052 and the correlation between informality and seniority was -0.335.",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#slide-title",
+    "href": "slides/index.html#slide-title",
+    "title": "Example",
+    "section": "Slide title",
+    "text": "Slide title\n\n\nEat spaghetti\nDrink wine",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#slide-title-1",
+    "href": "slides/index.html#slide-title-1",
+    "title": "Example",
+    "section": "Slide title",
+    "text": "Slide title\n\n\nLeft column\n\n\nOne\nTwo\nThree",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#admixture-displacement-in-each-geographical-region-1",
+    "href": "slides/index.html#admixture-displacement-in-each-geographical-region-1",
+    "title": "Example",
+    "section": "Admixture displacement in each geographical region",
+    "text": "Admixture displacement in each geographical region\n\n\n\n\n\nThe correlation between informality and age was -0.052 and the correlation between informality and seniority was -0.335.\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 3.2: Interaction among Danes: Regressions of informality against age for five levels of seniority.",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "slides/index.html#slide-title-2",
+    "href": "slides/index.html#slide-title-2",
+    "title": "Example",
+    "section": "Slide Title",
+    "text": "Slide Title\nSlide content\n\n\n\n\nSchumer et al. (2018)",
+    "crumbs": [
+      "Slides",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Example</span>"
+    ]
+  },
+  {
+    "objectID": "notebooks/example.html",
+    "href": "notebooks/example.html",
+    "title": "Workplace interaction",
+    "section": "",
+    "text": "Sampling\nImport some plotting libraries and set some defaults:\nsubjects = pd.read_csv('../data/data_table.csv')\nassert subjects.index.size == params.sample_size\nsubjects\n\n\n\nTable 4.1: People included in the analysis.\n\n\n\n\n\n\n\n\n\n\nname\nage\nsex\nposition\nnationality\n\n\n\n\n0\nJulie\n27\nF\nPhDstudent\nDK\n\n\n1\nThomas\n33\nM\nPostdoc\nGB\n\n\n2\nEmilie\n23\nF\nPhDstudent\nCH\n\n\n3\nSofie\n31\nF\nPostdoc\nDK\n\n\n4\nSara\n29\nF\nPostdoc\nUS\n\n\n5\nCecilie\n34\nF\nPostdoc\nDK\n\n\n6\nAnders\n32\nM\nPhDstudent\nUK\n\n\n7\nEmma\n42\nF\nProfessor\nDK\n\n\n8\nCaroline\n31\nF\nPhDstudent\nDK\n\n\n9\nLaura\n30\nF\nPostdoc\nDK\n\n\n10\nMikkel\n33\nM\nPostdoc\nNL\n\n\n11\nJens\n27\nM\nPhDstudent\nDK\n\n\n12\nAndreas\n29\nM\nPhDstudent\nDK\n\n\n13\nJakob\n28\nM\nPhDstudent\nDK\n\n\n14\nMathilde\n61\nF\nProfessor\nDK\n\n\n15\nKatrine\n35\nF\nPostdoc\nDK\n\n\n16\nPoul\n30\nM\nPostdoc\nDK\n\n\n17\nAnna\n26\nF\nPhDstudent\nDK\n\n\n18\nPeter\n42\nM\nProfessor\nGB\n\n\n19\nIda\n53\nF\nPostdoc\nDK\n\n\n20\nFreja\n30\nF\nPostdoc\nDK\n\n\n21\nMaria\n39\nF\nProfessor\nUK\n\n\n22\nAmalie\n29\nF\nPhDstudent\nDK\n\n\n23\nCamilla\n35\nF\nPostdoc\nDK\nThe 24 subjects from workplaces in Denmark were interviewed …. blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah",
+    "crumbs": [
+      "Notebooks",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Workplace interaction</span>"
+    ]
+  },
+  {
+    "objectID": "notebooks/example.html#sampling",
+    "href": "notebooks/example.html#sampling",
+    "title": "Workplace interaction",
+    "section": "",
+    "text": "Tip:\nBy adding a label and caption to a cell displaying a table, you can refer to that table elsewhere and insert it in a manuscript.\n\n\n\nTip:\nBy generaing markdown for descriptions that will eventually end up in the manuscript, you can imbed python values. It also ensures that the manuscript exactly reflects the notebook.",
+    "crumbs": [
+      "Notebooks",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Workplace interaction</span>"
+    ]
+  },
+  {
+    "objectID": "notebooks/example.html#interviews",
+    "href": "notebooks/example.html#interviews",
+    "title": "Workplace interaction",
+    "section": "Interviews",
+    "text": "Interviews\nIn interviewed {python} params.sample_size workplace individuals were interviewed by …. blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah, blah,\n\n\n#| label: tbl-measured-informality\n#| tbl-cap: \"Informality quantified for subjects in the study.\"\n\ndf = pd.DataFrame({'name': subjects.name, \n                   'seniority': np.random.randint(0, 5, params.sample_size), \n                   'age': subjects.age})\ndf['informality'] = np.random.normal(loc=10, scale=1, size=params.sample_size)\ndf\n\n\n\n\n\n\n\n\nname\nseniority\nage\ninformality\n\n\n\n\n0\nJulie\n0\n27\n10.210878\n\n\n1\nThomas\n4\n33\n10.322542\n\n\n2\nEmilie\n0\n23\n9.149356\n\n\n3\nSofie\n4\n31\n11.216431\n\n\n4\nSara\n1\n29\n10.636890\n\n\n5\nCecilie\n3\n34\n10.119007\n\n\n6\nAnders\n1\n32\n11.203553\n\n\n7\nEmma\n0\n42\n10.208620\n\n\n8\nCaroline\n3\n31\n9.986648\n\n\n9\nLaura\n3\n30\n8.512250\n\n\n10\nMikkel\n2\n33\n8.760804\n\n\n11\nJens\n2\n27\n9.606978\n\n\n12\nAndreas\n1\n29\n10.415735\n\n\n13\nJakob\n4\n28\n7.811192\n\n\n14\nMathilde\n3\n61\n8.438468\n\n\n15\nKatrine\n1\n35\n9.677993\n\n\n16\nPoul\n0\n30\n10.575365\n\n\n17\nAnna\n4\n26\n8.633373\n\n\n18\nPeter\n3\n42\n9.798041\n\n\n19\nIda\n4\n53\n9.757849\n\n\n20\nFreja\n4\n30\n10.808179\n\n\n21\nMaria\n0\n39\n11.651912\n\n\n22\nAmalie\n2\n29\n8.845759\n\n\n23\nCamilla\n3\n35\n9.255760\n\n\n\n\n\n\n\n\ndf.groupby(['seniority']).mean(numeric_only=True).reset_index()\n\n\n\nTable 4.2: Mean interaction scores by seniority and age\n\n\n\n\n\n\n\n\n\n\nseniority\nage\ninformality\n\n\n\n\n0\n0\n32.200000\n10.359226\n\n\n1\n1\n31.250000\n10.483543\n\n\n2\n2\n29.666667\n9.071180\n\n\n3\n3\n38.833333\n9.351696\n\n\n4\n4\n33.500000\n9.758261\n\n\n\n\n\n\n\n\n\n\n\nsns.scatterplot(x='age', y='informality', data=df, hue='seniority', palette='viridis')\nplt.ylabel('How informal you can be')\nplt.xlabel('Age')\nplt.legend(title='Seniority', loc='lower right', labels=['Undergrad', 'Postgrad', 'PhD', 'Postdoc', 'Professor'])\nplt.ylim(bottom=0) ;\n\n\n\n\n\n\n\nFigure 4.1: Interaction among Danes: How Danes interact is has very little to do with age and seniority, compared to most other contries.\n\n\n\n\n\nSeems Danish people act very informally unaffected by age and seniority.\n\ninformality_age_cor = df.informality.corr(df.age)\ninformality_age_cor\n\nnp.float64(-0.05247493673028928)\n\n\n\ninformality_seniority_cor = df.informality.corr(df.seniority)\ninformality_seniority_cor\n\nnp.float64(-0.33490396110863274)\n\n\n\n\nThe correlation between informality and age was -0.052 and the correlation between informality and seniority was -0.335.\n\n\n\nsns.lmplot(x='age', y='informality', data=df, hue='seniority', palette='viridis')\nplt.ylabel('How informal you can be')\nplt.xlabel('Age') ;\n\n\n\n\n\n\n\nFigure 4.2: Interaction among Danes: Regressions of informality against age for five levels of seniority.",
+    "crumbs": [
+      "Notebooks",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Workplace interaction</span>"
+    ]
+  },
+  {
+    "objectID": "workflow.html",
+    "href": "workflow.html",
+    "title": "GWF workflow",
+    "section": "",
+    "text": "Imports and utility functions\nr”“”\nExample workflow using mapping between intput and output of each target. It is made to show all the ways information may be passed through an workflow.\n““”\nimport os\nfrom pathlib import Path\nfrom gwf import Workflow, AnonymousTarget\nfrom gwf.workflow import collect\nimport glob\nInstantiate the workflow with the name of the project folder:\n# instantiate the workflow\ngwf = Workflow(defaults={'account': 'your-project-folder-name'})\nUtility functions:\n# utility function\ndef modify_path(path, **kwargs):\n    \"\"\"\n    Utility function for modifying file paths substituting\n    the directory (dir), base name (base), or file suffix (suffix).\n    \"\"\"\n    for key in ['dir', 'base', 'suffix']:\n        kwargs.setdefault(key, None)\n    assert len(kwargs) == 3\n\n    par, name = os.path.split(path)\n    name_no_suffix, suf = os.path.splitext(name)\n    if type(kwargs['suffix']) is str:\n        suf = kwargs['suffix']\n    if kwargs['dir'] is not None:\n        par = kwargs['dir']\n    if kwargs['base'] is not None:\n        name_no_suffix = kwargs['base']\n\n    new_path = os.path.join(par, name_no_suffix + suf)\n    if type(kwargs['suffix']) is tuple:\n        assert len(kwargs['suffix']) == 2\n        new_path, nsubs = re.subn(r'{}$'.format(kwargs['suffix'][0]), kwargs['suffix'][1], new_path)\n        assert nsubs == 1, nsubs\n    return new_path",
+    "crumbs": [
+      "Workflows",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>GWF workflow</span>"
+    ]
+  },
+  {
+    "objectID": "workflow.html#template-functions",
+    "href": "workflow.html#template-functions",
+    "title": "GWF workflow",
+    "section": "Template functions:",
+    "text": "Template functions:\n\n# task template function\ndef uppercase_names(raw_path): \n    \"\"\"\n    Formats names to uppercase.\n    \"\"\"\n    # dir for files produces by task\n    output_dir = 'steps/upper_cased'\n    # path of output file\n    uppercased_path = modify_path(raw_path, dir=output_dir, suffix='_uppercased.txt')\n\n    # input specification\n    inputs = [raw_path]\n    # output specification mapping a label to each file\n    outputs = {'uppercased_path': uppercased_path}\n    # resource specification\n    options = {'memory': '8g', 'walltime': '00:10:00'} \n\n    # tmporary output file path\n    tmp_uppercased_path = modify_path(raw_path, dir='/tmp')\n\n    # commands to run in task (bash script)\n    # we write to a tmp file and move that to the output directory \n    # only if the command succeds (the && takes care of that)\n    spec = f\"\"\"\n    mkdir -p {output_dir}\n    cat {raw_path} | tr [:lower:] [:upper:] &gt; {tmp_uppercased_path} &&\n        mv {tmp_uppercased_path} {uppercased_path}\n    \"\"\"\n    # return target\n    return AnonymousTarget(inputs=inputs, outputs=outputs, options=options, spec=spec)\n\n\n# task template function\ndef divide_names(uppercased_path, me=None):\n    \"\"\"\n    Splits names into two files. One with my name and one with other names.\n    \"\"\"\n    # uppercased version of the me argument\n    uppercased_me = me.upper()\n\n    # dir for files produces by task\n    output_dir = 'steps/filtered_names'\n    # path of output file with names matching me\n    filt_me_path = modify_path(uppercased_path, dir=output_dir, suffix=f'_{me}.txt')\n    # path of output file with other names\n    filt_other_path = modify_path(uppercased_path, dir=output_dir, suffix=f'_not_{me}.txt')\n\n    # input specification\n    inputs = [uppercased_path]\n    # output specification mapping a label to each file\n    outputs = {'filt_me_path': filt_me_path, 'filt_other_path': filt_other_path}\n    # resource specification\n    options = {'memory': '8g', 'walltime': '00:10:00'} \n\n    # tmporary output file paths\n    tmp_filt_me_path = modify_path(filt_me_path, dir='/tmp')\n    tmp_filt_other_path = modify_path(filt_other_path, dir='/tmp')\n\n    # commands to run in task (bash script)\n    # we write to tmp files and move them to the output directory \n    # only if the command succeds (the && takes care of that)\n    spec = f\"\"\"\n    mkdir -p {output_dir}    \n    grep {uppercased_me} {uppercased_path} &gt; {tmp_filt_me_path} &&  \n        grep -v {uppercased_me} {uppercased_path} &gt; {tmp_filt_other_path} &&  \n        mv {tmp_filt_me_path} {filt_me_path} &&  \n        mv {tmp_filt_other_path} {filt_other_path}\n    \"\"\"\n    # return target\n    return AnonymousTarget(inputs=inputs, outputs=outputs, options=options, spec=spec)\n\n\n# task template function\ndef unique_names(filt_me_path, filt_other_path): \n    \"\"\"\n    Extracts unique names from a file.\n    \"\"\"\n    # dir for files produces by task\n    output_dir = 'steps/unique_names'\n    # path of output file with unique names matching me\n    uniq_me_path = modify_path(filt_me_path, dir=output_dir, suffix='_unique.txt')\n    # path of output file with unique other names\n    uniq_other_path = modify_path(filt_other_path, dir=output_dir, suffix='_unique.txt')\n\n    # input specification\n    inputs = [filt_me_path, filt_other_path]\n    # output specification mapping a label to each file\n    outputs = {'unique_me_path': uniq_me_path, 'unique_other_path': uniq_other_path}\n    # resource specification\n    options = {'memory': '8g', 'walltime': '00:10:00'} \n\n    # tmporary output file paths\n    tmp_uniq_me_path = modify_path(uniq_me_path, dir='/tmp')\n    tmp_uniq_other_path = modify_path(uniq_other_path, dir='/tmp')\n\n    # commands to run in task (bash script)\n    # we write to tmp files and move them to the output directory \n    # only if the command succeds (the && takes care of that)\n    spec = f\"\"\"\n    mkdir -p {output_dir}    \n    sort {filt_me_path} | uniq &gt; {tmp_uniq_me_path} && \n        sort {filt_other_path} | uniq &gt; {tmp_uniq_other_path} && \n        mv {tmp_uniq_me_path} {uniq_me_path} && \n        mv {tmp_uniq_other_path} {uniq_other_path}\n    \"\"\"\n    # return target\n    return AnonymousTarget(inputs=inputs, outputs=outputs, options=options, spec=spec)\n\n\n# task template function\ndef merge_names(paths, output_path): \n    \"\"\"\n    Merges names from many files.\n    \"\"\"\n    # dir for files produces by task\n    output_dir = modify_path(output_path, base='', suffix='')\n\n    # input specification\n    inputs = [paths]\n    # output specification mapping a label to the file\n    outputs = {'path': output_path}\n\n    # tmporary output file path\n    tmp_output_path =  modify_path(output_path, dir='/tmp')\n\n    # resource specification\n    options = {'memory': '8g', 'walltime': '00:10:00'} \n\n    # commands to run in task (bash script)\n    # we write to tmp files and move them to the output directory \n    # only if the command succeds (the && takes care of that)\n    spec = f\"\"\"\n    mkdir -p {output_dir}\n    cat {' '.join(paths)} &gt; {tmp_output_path} && \n        mv {tmp_output_path} {output_path}\n    \"\"\"\n    # return target\n    return AnonymousTarget(inputs=inputs, outputs=outputs, options=options, spec=spec)\n\n# task template function\ndef run_notebook(path, dependencies, memory='8g', walltime='00:10:00', cores=1):    \n    \"\"\"\n    Executes a notebook inplace and saves the output.\n    \"\"\"\n    # path of output sentinel file\n    sentinel = modify_path(path, base=f'.{str(Path(path).name)}', suffix='.sentinel')\n    # sentinel = path.parent / f'.{path.name}'\n\n    # input specification\n    inputs = [path] + dependencies\n    # output specification mapping a label to each file\n    outputs = {'sentinel': sentinel}\n    # resource specification\n    options = {'memory': memory, 'walltime': walltime, 'cores': cores} \n\n    # commands to run in task (bash script)\n    spec = f\"\"\"\n    jupyter nbconvert --to notebook --execute --inplace {path} && touch {sentinel}\n    \"\"\"\n    # return target\n    return AnonymousTarget(inputs=inputs, outputs=outputs, options=options, spec=spec)",
+    "crumbs": [
+      "Workflows",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>GWF workflow</span>"
+    ]
+  },
+  {
+    "objectID": "workflow.html#workflow",
+    "href": "workflow.html#workflow",
+    "title": "GWF workflow",
+    "section": "Workflow:",
+    "text": "Workflow:\n\n# instantiate the workflow\ngwf = Workflow(defaults={'account': 'your-project-folder-name'})\n\n# input files for workflow\ninput_file_names = ['data/input_file1.txt', 'data/input_file2.txt']\n\n# workflow parameter\nmyname = 'Kasper'\n\n# run an uppercase_names task for each input file\nuppercase_names_targets = gwf.map(uppercase_names, input_file_names)\n\n# run an divide_names task for each output file from uppercase_names\nfilter_names_targets = gwf.map(divide_names, uppercase_names_targets.outputs, extra=dict(me=myname))\n\n# run an unique_names task for each output file from divide_names\nunique_names_targets = gwf.map(unique_names, filter_names_targets.outputs)\n\n# collect the outputs labelled 'unique_me_path' from all the outputs of unique_names \ncollected_outputs = collect(unique_names_targets.outputs, ['unique_me_path'])\n\n# create a single task to merge all those files into one\nmerge_me_target = gwf.target_from_template(\n    'merge_not_me_name_files',\n    merge_names(collected_outputs['unique_me_paths'], \"results/merged_me_names.txt\")\n    )\n\n# collect the outputs labelled 'unique_other_path' from all the outputs of unique_names \ncollected_outputs = collect(unique_names_targets.outputs, ['unique_other_path'])\n\n# create a single task to merge all those files into one\nmerge_other_target = gwf.target_from_template(\n    'merge_me_name_files',\n    merge_names(collected_outputs['unique_other_paths'], \"results/merged_not_me_names.txt\")\n    )\n\n# make notebooks depend on all output files from workflow\nnotebook_dependencies = []\nfor x in gwf.targets.values():\n    outputs = x.outputs\n    if type(outputs) is dict:\n        for o in outputs.values():\n            notebook_dependencies.append(o)\n    elif type(outputs) is list:\n        notebook_dependencies.extend(outputs)\n\n#  run notebooks in sorted order nb01_, nb02_, ...\nfor path in glob.glob('notebooks/*.ipynb'):\n    target = gwf.target_from_template(\n        os.path.basename(path), run_notebook(path, notebook_dependencies))\n    # make notebooks depend on all previous notebooks\n    notebook_dependencies.append(target.outputs['sentinel'])",
+    "crumbs": [
+      "Workflows",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>GWF workflow</span>"
+    ]
+  }
+]
