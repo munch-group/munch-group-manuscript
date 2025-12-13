@@ -1,5 +1,5 @@
 
-![](https://github.com/munch-group/munch-group-project/actions/workflows/quarto-publish.yml/badge.svg?event=push)
+![](https://github.com/munch-group/munch-group-manuscript/actions/workflows/quarto-publish.yml/badge.svg?event=push)
 
 # Template repository for a library project
 
