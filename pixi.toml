@@ -24,6 +24,12 @@ nbdime = "*"
 vscodenb = "*"
 r-rsvg = "*"
 
+[pypi-dependencies]
+claude-agent-sdk = ">=0.1.48, <0.2"
+anyio = "*"
+rich = "*"
+gitpython = "*"
+
 [tasks.init]
 args = ["new_name"]
 cmd = "python ./scripts/rename.py {{new_name}} && gh repo set-default https://github.com/munch-group/{{new_name}}"

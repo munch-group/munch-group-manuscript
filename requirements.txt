@@ -1,0 +1,7 @@
+# manuscript_agents/requirements.txt
+# Install with: pip install -r requirements.txt
+
+claude-agent-sdk>=0.1.3   # Agent SDK — runs Claude Code as a subprocess
+anyio>=4.0                 # Async runtime used by the SDK
+rich>=13.0                 # Terminal output formatting
+gitpython>=3.1             # Optional: for git-based repo introspection
