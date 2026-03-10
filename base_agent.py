@@ -51,7 +51,28 @@ class BaseAgent(ABC):
 
     def __init__(self, kb: KnowledgeBase, repo_root: str = ""):
         self.kb = kb
-        self.repo_root = Path(repo_root or kb.repo_path)
+        # Build a label → Path mapping for all registered repos
+        self._repo_roots: dict[str, Path] = {}
+        for rp in kb.repo_paths:
+            self._repo_roots[rp["label"]] = Path(rp["path"])
+        # Fallback: if repo_root was passed explicitly, use it as default
+        if repo_root:
+            self._default_repo_root = Path(repo_root)
+        elif kb.repo_paths:
+            self._default_repo_root = Path(kb.repo_paths[0]["path"])
+        else:
+            self._default_repo_root = Path(".")
+
+    @property
+    def repo_root(self) -> Path:
+        """Default repo root (backward compat)."""
+        return self._default_repo_root
+
+    def _resolve_repo_root(self, repo: str = "") -> Path:
+        """Resolve a repo label to its root path. Empty string → default."""
+        if repo and repo in self._repo_roots:
+            return self._repo_roots[repo]
+        return self._default_repo_root
 
     # ── Abstract interface ────────────────────────────────────────────────────
 
@@ -64,12 +85,13 @@ class BaseAgent(ABC):
 
     # ── Tool implementations ──────────────────────────────────────────────────
 
-    def _read_file(self, path: str, max_lines: int = 200) -> str:
-        target = self.repo_root / path
+    def _read_file(self, path: str, max_lines: int = 200, repo: str = "") -> str:
+        root = self._resolve_repo_root(repo)
+        target = root / path
         if not target.exists():
             target = Path(path)
         if not target.exists():
-            return f"File not found: {path}"
+            return f"File not found: {path}" + (f" (repo={repo})" if repo else "")
         try:
             content = target.read_text(errors="replace")
             lines = content.splitlines()
@@ -79,18 +101,19 @@ class BaseAgent(ABC):
         except Exception as e:
             return f"Could not read {path}: {e}"
 
-    def _list_directory(self, path: str = ".", recursive: bool = False) -> str:
-        target = self.repo_root / path
+    def _list_directory(self, path: str = ".", recursive: bool = False, repo: str = "") -> str:
+        root = self._resolve_repo_root(repo)
+        target = root / path
         if not target.exists():
             target = Path(path)
         if not target.exists():
-            return f"Directory not found: {path}"
+            return f"Directory not found: {path}" + (f" (repo={repo})" if repo else "")
         try:
             entries = sorted(target.rglob("*") if recursive else target.iterdir())
             lines = []
             for e in entries:
                 try:
-                    rel = e.relative_to(self.repo_root)
+                    rel = e.relative_to(root)
                 except ValueError:
                     rel = e
                 lines.append(f"  {rel}" + ("/" if e.is_dir() else ""))
@@ -139,26 +162,30 @@ class BaseAgent(ABC):
         Closures capture self so tools have access to kb and repo_root.
         """
         agent = self  # capture for closures
+        repo_labels = list(agent._repo_roots.keys())
+        repo_hint = f" Available repos: {repo_labels}." if len(repo_labels) > 1 else ""
 
         @tool("read_file",
-              "Read a file from the repository by path (relative to repo root).",
-              {"path": str, "max_lines": int})
+              f"Read a file from a repository by path (relative to repo root).{repo_hint}",
+              {"path": str, "max_lines": int, "repo": str})
         async def read_file(args):
             return {"content": [{"type": "text",
-                "text": agent._read_file(args["path"], args.get("max_lines", 200))}]}
+                "text": agent._read_file(args["path"], args.get("max_lines", 200),
+                                          args.get("repo", ""))}]}
 
         @tool("list_directory",
-              "List files and directories within the repository.",
-              {"path": str, "recursive": bool})
+              f"List files and directories within a repository.{repo_hint}",
+              {"path": str, "recursive": bool, "repo": str})
         async def list_directory(args):
             return {"content": [{"type": "text",
                 "text": agent._list_directory(args.get("path", "."),
-                                               args.get("recursive", False))}]}
+                                               args.get("recursive", False),
+                                               args.get("repo", ""))}]}
 
         @tool("read_kb",
               ("Read a field from the shared KnowledgeBase. "
-               "Available: repo_map, results_store, methods_spec, "
-               "journal_spec, draft, audit, review, extra_context."),
+               "Available: repo_registry, repo_map (primary repo), results_store, "
+               "methods_spec, journal_spec, draft, audit, review, extra_context."),
               {"field": str, "subfield": str})
         async def read_kb(args):
             return {"content": [{"type": "text",

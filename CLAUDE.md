@@ -90,19 +90,68 @@ top-level fields:
 
 ### Input fields (set by the user before pipeline starts)
 ```python
-repo_path: str          # absolute path to the target repository
-journal_name: str       # e.g. "PLOS Genetics"
-extra_context: str      # free-text description of the project
-target_audience: str    # e.g. "computational population geneticists"
+repo_paths: list[dict]  # [{"path": str, "label": str}, ...]
+                         # supports single or multiple repos
+journal_name: str        # e.g. "PLOS Genetics"
+extra_context: str       # free-text description of the project
+target_audience: str     # e.g. "computational population geneticists"
 ```
+
+**Backward compatibility**: `kb.repo_path` (str property) still works —
+it reads/writes the first entry in `repo_paths`. This allows existing
+code and old KB JSON snapshots (with a single `repo_path` string) to
+work without changes.
+
+### Author vision (loaded from PAPER_VISION.md)
+```python
+author_vision: AuthorVision
+    .one_sentence_claim: str
+    .primary_audience: str
+    .narrative_angle: str           # "methods-forward" | "biology-forward" | "tools-forward"
+    .key_findings_foreground: list[str]
+    .key_findings_background: list[str]
+    .connections_to_previous_work: list[str]
+    .forbidden_claims: list[str]
+    .preferred_journals: list[str]
+    .tone: str
+    .repo_roles: dict[str, RepoRole]  # repo_id (account/repo) → RepoRole
+    .raw_markdown: str                # full PAPER_VISION.md text
+
+RepoRole:
+    .repo_id: str                   # e.g. "munch-group/analysis"
+    .role: str                      # free-text role description
+    .focus: list[str]               # paths/areas to focus on
+    .ignore: list[str]              # paths/areas to skip
+    .relationships: list[str]       # how this repo connects to others
+```
+
+`RepoCartographer` reads `PAPER_VISION.md` from the primary repo before
+exploring any repository. If it exists, the agent parses it and writes
+all fields to `kb.author_vision`. The `repo_roles` section guides which
+parts of each repo to focus on or ignore.
+
+All writing agents receive the author vision in their task prompts via
+the `_vision_context()` helper in `layer2.py`. The `DomainConsistencyChecker`
+also checks the manuscript against `forbidden_claims`.
 
 ### Layer 1 outputs
 ```python
-repo_map: RepoMap
-    .file_tree: str                   # formatted directory listing
-    .pipeline_steps: list[dict]       # {name, script, inputs, outputs, description}
-    .software_stack: list[dict]       # {name, version, purpose}
-    .parameters: dict[str, Any]       # param_name → value
+repo_registry: RepoRegistry
+    .repos: dict[str, RepoMap]       # label → RepoMap
+    .labels: list[str]               # property: all registered labels
+    .primary: RepoMap                # property: first repo map
+    .all_pipeline_steps() → list     # merged steps tagged with "repo" key
+    .all_software() → list           # deduplicated software across repos
+    .all_parameters() → dict         # merged params prefixed "label.param"
+    .summary() → str                 # formatted overview of all repos
+
+repo_map: RepoMap                    # property alias → repo_registry.primary
+    .repo_label: str                 # label for this repo
+    .repo_path: str                  # absolute path to this repo
+    .file_tree: str                  # formatted directory listing
+    .pipeline_steps: list[dict]      # {name, script, inputs, outputs, description}
+    .software_stack: list[dict]      # {name, version, purpose}
+    .parameters: dict[str, Any]      # param_name → value
     .doc_vs_code_mismatches: list[str]
     .key_algorithms: list[str]
 
@@ -192,8 +241,8 @@ The server exposes five tools to Claude Code:
 
 | Tool | Purpose |
 |------|---------|
-| `read_file` | Read a file from the repo (path relative to repo root) |
-| `list_directory` | List files/dirs within the repo |
+| `read_file` | Read a file from a repo (path relative to repo root; optional `repo` label for multi-repo) |
+| `list_directory` | List files/dirs within a repo (optional `repo` label for multi-repo) |
 | `read_kb` | Read any KB field (optionally a subfield) |
 | `write_kb` | Write a value to a KB field or subfield |
 | `finish` | Signal task completion, record summary in agent_log |
@@ -238,7 +287,7 @@ and stops when it calls `finish` or reaches its own internal limit.
 ### Gate functions
 ```python
 gate_extraction_complete(kb) → (bool, str)
-    # Fails if: pipeline_steps empty, results_store empty,
+    # Fails if: no repo maps have pipeline_steps, results_store empty,
     # notation_registry empty, journal_spec not populated
 
 gate_writing_complete(kb) → (bool, str)
@@ -264,10 +313,12 @@ Call after manually editing draft sections in the KB JSON.
 ## Layer 1 agents (`agents/layer1.py`)
 
 ### RepoCartographer
-**Writes to**: `repo_map.*`
-**Behaviour**: Explores the repo with `list_directory` and `read_file`.
+**Writes to**: `repo_registry.*` (one `RepoMap` per repo label)
+**Behaviour**: Explores each repo with `list_directory` and `read_file`
+(using the `repo` parameter to switch between repos in multi-repo projects).
 Reads README, Snakefile/workflow, config files, main scripts.
 Records the pipeline as ordered steps. Flags doc/code mismatches.
+For multi-repo projects, also identifies cross-repo dependencies.
 **Critical**: This agent's output is the only source of repo truth for
 all downstream agents. It must be exhaustive.
 
@@ -362,9 +413,14 @@ writing agents alone).
 ## CLI (`run.py`)
 
 ```
-python run.py --repo PATH --journal NAME [options]
+python run.py --repo PATH [--repo PATH ...] --journal NAME [options]
 
 Options:
+  --repo PATH        Path to a local repository (repeatable for multi-repo).
+                     Use label=path for explicit labels:
+                       --repo analysis=/path/to/analysis
+                       --repo simulation=/path/to/sim
+                     Without a label, the directory name is used.
   --context TEXT     Free-text project description (injected into extra_context)
   --audience TEXT    Target audience (default: "computational geneticists")
   --phases N [N ...] Which phases to run (1-5); default: all
@@ -401,40 +457,83 @@ See `SETUP.md` for full setup instructions and troubleshooting.
 
 ---
 
+## `PAPER_VISION.md` — author vision file
+
+A structured Markdown file placed in the root of the **primary target repo**
+(not this codebase). `RepoCartographer` reads it first, before anything
+else, and loads it into `kb.author_vision`.
+
+Repos are referenced by their GitHub identifier (`account/repo-name`),
+which must match the `--repo` label used on the CLI.
+
+Suggested structure:
+```markdown
+# Paper Vision
+
+## The one-sentence claim
+Our new method detects adaptive introgression with 10x fewer false positives.
+
+## The primary audience
+Computational population geneticists
+
+## The narrative angle
+methods-forward
+
+## Key findings to foreground
+1. Detection power improvement over existing methods
+2. Application to archaic introgression dataset
+
+## Key findings to background
+1. Runtime benchmarks (mention but don't foreground)
+
+## Connections to previous work
+- Extends the framework of [CITE: Racimo et al., 2017]
+- Addresses false-positive issue raised by [CITE: Setter et al., 2020]
+
+## Things the paper must NOT claim
+- That this method proves adaptive introgression occurred
+- That the method works for very recent admixture (<10 generations)
+
+## Preferred journals (in order)
+1. PLOS Genetics
+2. Molecular Biology and Evolution
+
+## Tone
+Accessible but technically precise. Avoid jargon where possible.
+
+## Repositories
+- **munch-group/analysis** — Main analysis pipeline. Produces all figures.
+  Focus on: `workflow/`, `results/`, `scripts/figures/`
+  Ignore: `scratch/`, `old_versions/`
+- **munch-group/sim-toolkit** — Forward-time simulations for power analysis.
+  Focus on: `sim_pipeline.py`, `configs/`
+  Ignore: `notebooks/exploration/`
+  Relationship: produces simulated datasets consumed by analysis repo's `benchmark/` step
+```
+
+The `## Repositories` section uses `account/repo-name` identifiers that
+must match the `--repo` labels on the CLI:
+```bash
+python run.py \
+    --repo munch-group/analysis=/path/to/analysis \
+    --repo munch-group/sim-toolkit=/path/to/sim \
+    --journal "PLOS Genetics"
+```
+
+**Implementation status**: Fully implemented. The `AuthorVision` and
+`RepoRole` dataclasses are in `knowledge_base.py`. `RepoCartographer`
+reads `PAPER_VISION.md` from the primary repo. All writing agents
+receive the vision via `_vision_context()` in `layer2.py`.
+`DomainConsistencyChecker` checks `forbidden_claims`.
+
+---
+
 ## Planned features not yet implemented
 
 These were designed in conversation with the project author and should be
 implemented as the next development priorities.
 
-### 1. `PAPER_VISION.md` — author vision file
-
-A structured Markdown file placed in the root of the **target repo** (not
-this codebase). `RepoCartographer` should read it first, before anything
-else, and load it into a new `AuthorVision` KB field.
-
-Suggested structure:
-```markdown
-# Paper Vision
-## The one-sentence claim
-## The primary audience
-## The narrative angle  (methods-forward vs biology-forward)
-## Key findings to foreground  (numbered list)
-## Key findings to background  (numbered list)
-## Connections to previous work
-## Things the paper must NOT claim
-## Preferred journals (in order)
-## Tone
-```
-
-Implementation:
-- Add `AuthorVision` dataclass to `knowledge_base.py`
-- Add `kb.author_vision: AuthorVision` field to `KnowledgeBase`
-- In `RepoCartographer.task_prompt()`, prepend instructions to check for
-  `PAPER_VISION.md` first and load it via `write_kb`
-- All writing agents should read `author_vision` at the start of their
-  task prompts to align narrative framing
-
-### 2. Journal Selector (Phase 1.5)
+### 1. Journal Selector (Phase 1.5)
 
 Runs after extraction, before writing. Two sub-agents:
 
@@ -501,11 +600,15 @@ for the `claude-agent-sdk` to expose caching configuration.
 
 ### 5. `NarrativeSpec` propagation
 
-Once implemented, all writing agents' task prompts should include:
+Most of the originally planned `NarrativeSpec` functionality is now
+covered by `AuthorVision` (loaded from `PAPER_VISION.md`). The remaining
+piece is the `NarrativeSpec` that `ImpactFramer` would produce in
+Phase 1.5, providing journal-specific framing adjustments on top of
+the author's vision. Once Phase 1.5 is implemented, add:
 ```python
-f"Author narrative spec:\n{self.kb._tool_read_kb('narrative_spec')}\n"
+f"Journal-specific framing:\n{self.kb._tool_read_kb('narrative_spec')}\n"
 ```
-And all auditors should check the Discussion against `forbidden_claims`.
+to all writing agent task prompts (after the `_vision_context()` block).
 
 ---
 

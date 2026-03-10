@@ -17,6 +17,30 @@ from base_agent import BaseAgent
 from knowledge_base import KnowledgeBase
 
 
+def _vision_context(kb: KnowledgeBase) -> str:
+    """Return author vision context for writing agent task prompts, or empty string."""
+    av = kb.author_vision
+    if not av.one_sentence_claim:
+        return ""
+    parts = [
+        "Author vision (from PAPER_VISION.md — align your writing with this):",
+        f"  Claim: {av.one_sentence_claim}",
+    ]
+    if av.narrative_angle:
+        parts.append(f"  Narrative angle: {av.narrative_angle}")
+    if av.key_findings_foreground:
+        parts.append(f"  Foreground findings: {av.key_findings_foreground}")
+    if av.key_findings_background:
+        parts.append(f"  Background findings: {av.key_findings_background}")
+    if av.forbidden_claims:
+        parts.append(f"  FORBIDDEN claims (do NOT make these): {av.forbidden_claims}")
+    if av.tone:
+        parts.append(f"  Tone: {av.tone}")
+    if av.connections_to_previous_work:
+        parts.append(f"  Connections to prior work: {av.connections_to_previous_work}")
+    return "\n".join(parts) + "\n"
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECTION WRITERS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -52,6 +76,7 @@ STRICT RULES:
         return f"""\
 Please write the Introduction for this manuscript.
 
+{_vision_context(self.kb)}\
 Journal spec:
 {self.kb._tool_read_kb('journal_spec')}
 
@@ -90,7 +115,7 @@ STRICT RULES — the Methods section must:
 
 Structure:
   - Data (what data were used, accession numbers if any)
-  - Computational pipeline (following the pipeline steps in the repo_map)
+  - Computational pipeline (following the pipeline steps in the repo_registry)
   - Statistical analysis (all tests, corrections, thresholds)
   - Software and availability
 
@@ -102,11 +127,12 @@ write [MISSING: description] and do not invent a value.
         return f"""\
 Please write the Methods section.
 
+{_vision_context(self.kb)}\
 Methods spec (your primary source — do not deviate from this):
 {self.kb._tool_read_kb('methods_spec')}
 
 Repo map (for software and pipeline details):
-{self.kb._tool_read_kb('repo_map')}
+{self.kb._tool_read_kb('repo_registry')}
 
 Journal spec:
 {self.kb._tool_read_kb('journal_spec')}
@@ -143,11 +169,12 @@ If a result you want to cite is not in the results_store, write \
         return f"""\
 Please write the Results section.
 
+{_vision_context(self.kb)}\
 Locked results (your ONLY source of numbers):
 {self.kb.results_store.summary()}
 
 Figures and what they show (from repo map):
-{self.kb._tool_read_kb('repo_map', 'pipeline_steps')}
+{self.kb._tool_read_kb('repo_registry')}
 
 Journal spec:
 {self.kb._tool_read_kb('journal_spec')}
@@ -191,6 +218,7 @@ The Discussion should tell a coherent story, not address each result in isolatio
         return f"""\
 Please write the Discussion section.
 
+{_vision_context(self.kb)}\
 Results section (what was found):
 {self.kb._tool_read_kb('draft', 'results')}
 
@@ -235,6 +263,7 @@ RULES:
         return f"""\
 The manuscript is complete. Please write the abstract.
 
+{_vision_context(self.kb)}\
 Full manuscript:
 {self.kb.draft.full_text()[:6000]}
 
@@ -331,9 +360,16 @@ Record issues in audit.domain_issues as a list of dicts with:
 """
 
     def task_prompt(self) -> str:
+        forbidden = ""
+        if self.kb.author_vision.forbidden_claims:
+            forbidden = (
+                "\nFORBIDDEN CLAIMS (flag as fatal if the manuscript makes any of these):\n"
+                + "\n".join(f"  - {c}" for c in self.kb.author_vision.forbidden_claims)
+                + "\n"
+            )
         return f"""\
 Please check the manuscript for domain consistency.
-
+{forbidden}
 Full draft:
 {self.kb.draft.full_text()[:8000]}
 
@@ -374,7 +410,7 @@ Methods section:
 {self.kb._tool_read_kb('draft', 'methods')}
 
 Repo map (ground truth):
-{self.kb._tool_read_kb('repo_map')}
+{self.kb._tool_read_kb('repo_registry')}
 
 Methods spec:
 {self.kb._tool_read_kb('methods_spec')}

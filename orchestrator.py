@@ -48,8 +48,8 @@ console = Console()
 def gate_extraction_complete(kb: KnowledgeBase) -> tuple[bool, str]:
     """Layer 1 must be complete before writing begins."""
     issues = []
-    if not kb.repo_map.pipeline_steps:
-        issues.append("Repo map has no pipeline steps")
+    if not kb.repo_registry.all_pipeline_steps():
+        issues.append("No repo maps have pipeline steps")
     if not kb.results_store.entries:
         issues.append("Results store is empty")
     if not kb.methods_spec.notation_registry:
@@ -210,9 +210,12 @@ class ManuscriptOrchestrator:
         """
         phases_to_run = phases or [1, 2, 3, 4, 5]
 
+        repo_lines = "\n".join(
+            f"  [{rp['label']}] {rp['path']}" for rp in self.kb.repo_paths
+        )
         console.print(Panel(
             f"[bold]MANUSCRIPT AGENT TEAM[/bold]\n"
-            f"Repo: {self.kb.repo_path}\n"
+            f"Repos:\n{repo_lines}\n"
             f"Journal: {self.kb.journal_name}\n"
             f"Phases: {phases_to_run}",
             style="bold blue"

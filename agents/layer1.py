@@ -21,24 +21,73 @@ from knowledge_base import KnowledgeBase
 
 class RepoCartographer(BaseAgent):
     """
-    Maps the repository before any writing begins.
+    Maps the repository (or repositories) before any writing begins.
     Identifies the pipeline, software stack, parameters, and any
     mismatches between documentation and code.
+
+    First checks the primary repo for PAPER_VISION.md and loads it into
+    the author_vision KB field. For multi-repo projects, uses the
+    ## Repositories section to understand each repo's role and focus areas.
     """
     name = "repo_cartographer"
 
     @property
     def system_prompt(self) -> str:
-        return """\
-You are a meticulous computational biology repo analyst. Your job is to map a \
-GitHub repository for a computational genetics project so that a team of \
+        repo_labels = [rp["label"] for rp in self.kb.repo_paths]
+        multi_repo = len(repo_labels) > 1
+        multi_repo_instructions = ""
+        if multi_repo:
+            multi_repo_instructions = f"""
+MULTI-REPO PROJECT: This project spans {len(repo_labels)} repositories: {repo_labels}.
+You must map EACH repository. Use the `repo` parameter in read_file and list_directory
+to switch between repos (e.g. read_file(path="README.md", repo="{repo_labels[0]}")).
+
+For EACH repo, write a separate RepoMap to the repo_registry:
+  write_kb(field="repo_registry", subfield="{repo_labels[0]}", value=<RepoMap as JSON>)
+
+Pay special attention to:
+  - How the repos relate to each other (does one produce data the other consumes?)
+  - Cross-repo dependencies (shared file formats, parameters, data flow)
+  - Whether the repos should be treated as a single pipeline or separate stages
+
+"""
+        return f"""\
+You are a meticulous computational biology repo analyst. Your job is to map \
+GitHub repositories for a computational genetics project so that a team of \
 manuscript-writing agents can work from a reliable, structured knowledge base.
 
-Your outputs will be the ONLY source of truth about the repo for all downstream \
+FIRST STEP — ALWAYS: Check the primary repo (repo="{repo_labels[0]}") for a file \
+called PAPER_VISION.md. If it exists, read it and load its contents into the KB:
+
+  1. Read the file with read_file(path="PAPER_VISION.md", repo="{repo_labels[0]}")
+  2. Parse its structured sections and write them to the author_vision KB field:
+     - write_kb(field="author_vision", subfield="raw_markdown", value=<full text>)
+     - write_kb(field="author_vision", subfield="one_sentence_claim", value=<text>)
+     - write_kb(field="author_vision", subfield="primary_audience", value=<text>)
+     - write_kb(field="author_vision", subfield="narrative_angle", value=<text>)
+     - write_kb(field="author_vision", subfield="key_findings_foreground", value=<JSON list>)
+     - write_kb(field="author_vision", subfield="key_findings_background", value=<JSON list>)
+     - write_kb(field="author_vision", subfield="connections_to_previous_work", value=<JSON list>)
+     - write_kb(field="author_vision", subfield="forbidden_claims", value=<JSON list>)
+     - write_kb(field="author_vision", subfield="preferred_journals", value=<JSON list>)
+     - write_kb(field="author_vision", subfield="tone", value=<text>)
+     - For each repo in the ## Repositories section, write:
+       write_kb(field="author_vision", subfield="repo_roles", value=<JSON dict>)
+       where each key is the repo identifier (e.g. "munch-group/analysis") and
+       each value is {{"repo_id": "...", "role": "...", "focus": [...], "ignore": [...], "relationships": [...]}}
+
+  3. Use the repo_roles to GUIDE your exploration:
+     - Focus on paths/areas listed in "focus" for each repo
+     - Skip paths/areas listed in "ignore"
+     - Use "relationships" to understand data flow between repos
+
+If PAPER_VISION.md does not exist, proceed without it — but note its absence in your summary.
+
+Your outputs will be the ONLY source of truth about the repos for all downstream \
 agents. Be precise and complete. Do not interpret or editorialize — just map what \
 is there.
-
-Key things to find and record:
+{multi_repo_instructions}\
+Key things to find and record per repo:
 1. The full file/directory tree
 2. The computational pipeline: each step, its inputs, outputs, and purpose
 3. Software stack: all tools, libraries, and versions mentioned
@@ -46,26 +95,31 @@ Key things to find and record:
 5. Mismatches: anything the README/docs claim that the code doesn't implement,
    or vice versa
 
-Use the list_directory and read_file tools to explore the repo systematically.
-Use write_kb to store your findings in the repo_map field.
+Use the list_directory and read_file tools to explore each repo systematically.
+Use write_kb to store your findings in the repo_registry field (one entry per repo).
 Finish by calling the finish tool with a summary.
 
-Write to these KB fields:
-  - repo_map.file_tree         (string: formatted tree)
-  - repo_map.pipeline_steps    (list of dicts: name, script, inputs, outputs, description)
-  - repo_map.software_stack    (list of dicts: name, version, purpose)
-  - repo_map.parameters        (dict: param_name → value)
-  - repo_map.doc_vs_code_mismatches  (list of strings)
-  - repo_map.key_algorithms    (list of strings: brief description of each algorithm)
+Write to these KB fields per repo (replace LABEL with the repo label):
+  - repo_registry.LABEL  (a JSON object with fields: repo_label, repo_path,
+    file_tree, pipeline_steps, software_stack, parameters,
+    doc_vs_code_mismatches, key_algorithms)
 """
 
     def task_prompt(self) -> str:
+        repo_list = "\n".join(
+            f"  - [{rp['label']}] {rp['path']}"
+            for rp in self.kb.repo_paths
+        )
         return f"""\
-Please map the repository at: {self.kb.repo_path}
+Please map the following {'repositories' if len(self.kb.repo_paths) > 1 else 'repository'}:
+{repo_list}
 
 Additional context from the user: {self.kb.extra_context or 'None provided.'}
 
-Start by listing the root directory, then explore systematically.
+IMPORTANT: Start by checking for PAPER_VISION.md in the primary repo ({self.kb.repo_paths[0]['label']}). \
+Load it into the author_vision KB field before doing anything else.
+
+Then explore each repo systematically.
 Read key files (README, main scripts, config files, Snakefile/workflow files).
 Record everything in the knowledge base using write_kb.
 """
@@ -111,11 +165,18 @@ Record any inconsistencies as additional entries with result_id prefixed 'INCONS
 """
 
     def task_prompt(self) -> str:
+        repo_labels = [rp["label"] for rp in self.kb.repo_paths]
+        multi_hint = ""
+        if len(repo_labels) > 1:
+            multi_hint = (
+                f"\nThis is a multi-repo project with repos: {repo_labels}. "
+                f"Use the `repo` parameter in read_file/list_directory to access each.\n"
+            )
         return f"""\
-The repo has been mapped. Please extract all results.
-
-Repo map summary:
-{self.kb._tool_read_kb('repo_map')}
+The repos have been mapped. Please extract all results.
+{multi_hint}
+Repo registry summary:
+{self.kb._tool_read_kb('repo_registry')}
 
 Please:
 1. Use list_directory and read_file to find all results files
@@ -166,11 +227,19 @@ Do not invent or assume — only formalise what is actually in the code.
 """
 
     def task_prompt(self) -> str:
+        repo_labels = [rp["label"] for rp in self.kb.repo_paths]
+        multi_hint = ""
+        if len(repo_labels) > 1:
+            multi_hint = (
+                f"\nThis is a multi-repo project with repos: {repo_labels}. "
+                f"Use the `repo` parameter in read_file/list_directory to access each. "
+                f"Methods may span multiple repos — produce a unified formalisation.\n"
+            )
         return f"""\
-Please formalise the methods from the repository.
-
-Repo map:
-{self.kb._tool_read_kb('repo_map')}
+Please formalise the methods from the {'repositories' if len(repo_labels) > 1 else 'repository'}.
+{multi_hint}
+Repo registry:
+{self.kb._tool_read_kb('repo_registry')}
 
 Results store (to understand what was computed):
 {self.kb.results_store.summary()}

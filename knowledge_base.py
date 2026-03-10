@@ -14,11 +14,47 @@ from pathlib import Path
 from typing import Any
 
 
+# ── Author vision ────────────────────────────────────────────────────────────
+
+@dataclass
+class RepoRole:
+    """Per-repo metadata from PAPER_VISION.md."""
+    repo_id: str = ""              # e.g. "munch-group/analysis"
+    role: str = ""                 # free-text role description
+    focus: list[str] = field(default_factory=list)    # paths/areas to focus on
+    ignore: list[str] = field(default_factory=list)   # paths/areas to skip
+    relationships: list[str] = field(default_factory=list)  # how it connects to other repos
+
+
+@dataclass
+class AuthorVision:
+    """
+    Structured author intent loaded from PAPER_VISION.md in the primary repo.
+
+    Guides all agents: RepoCartographer uses repo_roles to focus exploration,
+    writing agents use narrative fields to align framing.
+    """
+    one_sentence_claim: str = ""
+    primary_audience: str = ""
+    narrative_angle: str = ""       # "methods-forward" | "biology-forward" | "tools-forward"
+    key_findings_foreground: list[str] = field(default_factory=list)
+    key_findings_background: list[str] = field(default_factory=list)
+    connections_to_previous_work: list[str] = field(default_factory=list)
+    forbidden_claims: list[str] = field(default_factory=list)
+    preferred_journals: list[str] = field(default_factory=list)
+    tone: str = ""
+    repo_roles: dict[str, RepoRole] = field(default_factory=dict)
+    # repo_id (account/repo) → RepoRole
+    raw_markdown: str = ""          # the full PAPER_VISION.md text for reference
+
+
 # ── Typed sub-stores ──────────────────────────────────────────────────────────
 
 @dataclass
 class RepoMap:
-    """Output of the Repo Cartographer."""
+    """Output of the Repo Cartographer — one per repository."""
+    repo_label: str = ""                # short label, e.g. "analysis", "simulation"
+    repo_path: str = ""                 # absolute path to this repository
     file_tree: str = ""
     pipeline_steps: list[dict] = field(default_factory=list)
     # Each step: {name, script, inputs, outputs, description}
@@ -27,6 +63,74 @@ class RepoMap:
     parameters: dict[str, Any] = field(default_factory=dict)
     doc_vs_code_mismatches: list[str] = field(default_factory=list)
     key_algorithms: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RepoRegistry:
+    """
+    Registry of all input repositories and their maps.
+
+    For single-repo projects this holds one entry. For multi-repo projects
+    each repository gets its own RepoMap, keyed by label.
+    """
+    repos: dict[str, RepoMap] = field(default_factory=dict)
+    # label → RepoMap
+
+    def add(self, label: str, path: str) -> RepoMap:
+        """Register a repo and return its (empty) RepoMap."""
+        rm = RepoMap(repo_label=label, repo_path=path)
+        self.repos[label] = rm
+        return rm
+
+    def get(self, label: str) -> RepoMap | None:
+        return self.repos.get(label)
+
+    @property
+    def labels(self) -> list[str]:
+        return list(self.repos.keys())
+
+    @property
+    def primary(self) -> RepoMap:
+        """Return the first repo map (convenience for single-repo projects)."""
+        if not self.repos:
+            return RepoMap()
+        return next(iter(self.repos.values()))
+
+    def all_pipeline_steps(self) -> list[dict]:
+        """Merged pipeline steps across all repos, tagged with repo_label."""
+        steps = []
+        for label, rm in self.repos.items():
+            for step in rm.pipeline_steps:
+                tagged = {**step, "repo": label}
+                steps.append(tagged)
+        return steps
+
+    def all_software(self) -> list[dict]:
+        """Merged software stack across all repos, deduplicated by name."""
+        seen = {}
+        for label, rm in self.repos.items():
+            for sw in rm.software_stack:
+                key = sw.get("name", "")
+                if key not in seen:
+                    seen[key] = {**sw, "repo": label}
+        return list(seen.values())
+
+    def all_parameters(self) -> dict[str, Any]:
+        """Merged parameters across all repos, prefixed with repo label."""
+        merged = {}
+        for label, rm in self.repos.items():
+            for k, v in rm.parameters.items():
+                merged[f"{label}.{k}"] = v
+        return merged
+
+    def summary(self) -> str:
+        lines = []
+        for label, rm in self.repos.items():
+            lines.append(f"  [{label}] {rm.repo_path}")
+            lines.append(f"    files: {len(rm.file_tree.splitlines()) if rm.file_tree else 0}")
+            lines.append(f"    pipeline steps: {len(rm.pipeline_steps)}")
+            lines.append(f"    software: {len(rm.software_stack)}")
+        return "\n".join(lines) if lines else "  (no repos registered)"
 
 
 @dataclass
@@ -154,13 +258,17 @@ class KnowledgeBase:
     Layer 1 agents populate it; Layer 2 agents read from it.
     """
     # Inputs (set before pipeline starts)
-    repo_path: str = ""
+    repo_paths: list[dict] = field(default_factory=list)
+    # Each entry: {"path": str, "label": str}
     journal_name: str = ""
     extra_context: str = ""       # anything the user wants to inject
     target_audience: str = ""
 
+    # Author vision (loaded from PAPER_VISION.md in primary repo)
+    author_vision: AuthorVision = field(default_factory=AuthorVision)
+
     # Layer 1 outputs
-    repo_map: RepoMap = field(default_factory=RepoMap)
+    repo_registry: RepoRegistry = field(default_factory=RepoRegistry)
     results_store: ResultsStore = field(default_factory=ResultsStore)
     methods_spec: MethodsSpec = field(default_factory=MethodsSpec)
     journal_spec: JournalSpec = field(default_factory=JournalSpec)
@@ -173,6 +281,51 @@ class KnowledgeBase:
     # Pipeline provenance
     agent_log: list[dict] = field(default_factory=list)
     # Each entry: {agent, timestamp, action, summary}
+
+    # ── Backward compatibility ─────────────────────────────────────────────────
+
+    @property
+    def repo_path(self) -> str:
+        """Return the first repo path (backward compat for single-repo usage)."""
+        if self.repo_paths:
+            return self.repo_paths[0]["path"]
+        return ""
+
+    @repo_path.setter
+    def repo_path(self, value: str):
+        """Set a single repo path (backward compat)."""
+        if self.repo_paths:
+            self.repo_paths[0]["path"] = value
+        else:
+            self.repo_paths = [{"path": value, "label": "main"}]
+
+    @property
+    def repo_map(self) -> RepoMap:
+        """Return the primary repo map (backward compat for single-repo usage)."""
+        return self.repo_registry.primary
+
+    @repo_map.setter
+    def repo_map(self, value: RepoMap):
+        """Set the primary repo map (backward compat)."""
+        label = value.repo_label or "main"
+        self.repo_registry.repos[label] = value
+
+    def _tool_read_kb(self, field: str, subfield: str = "") -> str:
+        """Read a KB field as a formatted string (used in task prompts)."""
+        obj = getattr(self, field, None)
+        if obj is None:
+            return f"KB field '{field}' not found."
+        if subfield:
+            obj = getattr(obj, subfield, None) or (
+                obj.get(subfield) if isinstance(obj, dict) else None
+            )
+            if obj is None:
+                return f"KB subfield '{field}.{subfield}' not found."
+        if hasattr(obj, "__dict__"):
+            return json.dumps(obj.__dict__, indent=2, default=str)
+        return json.dumps(obj, indent=2, default=str)
+
+    # ── Core methods ───────────────────────────────────────────────────────────
 
     def log(self, agent: str, action: str, summary: str):
         self.agent_log.append(dict(
@@ -190,11 +343,20 @@ class KnowledgeBase:
             json.dump(self.__dict__, f, indent=2, default=default)
 
     def status(self) -> str:
+        repo_lines = []
+        for rp in self.repo_paths:
+            repo_lines.append(f"    [{rp['label']}] {rp['path']}")
+        repo_str = "\n".join(repo_lines) if repo_lines else "    (not set)"
+        total_steps = len(self.repo_registry.all_pipeline_steps())
+        vision_str = (f"loaded ({self.author_vision.narrative_angle or 'no angle'})"
+                      if self.author_vision.one_sentence_claim else "not loaded")
         lines = [
             "── Knowledge Base Status ──────────────────────────────",
-            f"  Repo          : {self.repo_path or '(not set)'}",
+            f"  Repos         :",
+            repo_str,
+            f"  Author vision : {vision_str}",
             f"  Journal       : {self.journal_name or '(not set)'}",
-            f"  Pipeline steps: {len(self.repo_map.pipeline_steps)}",
+            f"  Pipeline steps: {total_steps}",
             f"  Results locked: {len(self.results_store.entries)}",
             f"  Notation syms : {len(self.methods_spec.notation_registry)}",
             f"  Draft sections: "
