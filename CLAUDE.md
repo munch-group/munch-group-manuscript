@@ -23,7 +23,7 @@ through `claude login`; no `ANTHROPIC_API_KEY` should be set.
 ## Repository layout
 
 ```
-manuscript_agents/
+munch-group-manuscript/
 ├── CLAUDE.md              ← this file
 ├── README.md              ← user-facing documentation
 ├── SETUP.md               ← step-by-step setup for Claude Code / Max billing
