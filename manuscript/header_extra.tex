@@ -357,15 +357,29 @@
 %%% For code blocks using the Shaded environment
 % \AddToHook{env/Shaded/before}{\vspace{-0.5em}\small} % Reduces space before
 % \AddToHook{env/Shaded/after}{\vspace{-1em}} % Reduces space after
+\usepackage{framed}
 \definecolor{shadecolor}{RGB}{245,245,245}
 
-\renewenvironment{Shaded}
-{
-  \vspace{-0.5em} % Add spacing before
-  \begin{snugshade} % Begin shaded block
-  \small % Smaller font
-}
-{
-  \end{snugshade} % End shaded block
-  \vspace{-1em} % Add spacing after
+\ifcsmacro{Shaded}{%
+  \renewenvironment{Shaded}
+  {
+    \vspace{-0.5em} % Add spacing before
+    \begin{snugshade} % Begin shaded block
+    \small % Smaller font
+  }
+  {
+    \end{snugshade} % End shaded block
+    \vspace{-1em} % Add spacing after
+  }
+}{%
+  \newenvironment{Shaded}
+  {
+    \vspace{-0.5em} % Add spacing before
+    \begin{snugshade} % Begin shaded block
+    \small % Smaller font
+  }
+  {
+    \end{snugshade} % End shaded block
+    \vspace{-1em} % Add spacing after
+  }
 }
